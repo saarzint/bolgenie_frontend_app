@@ -1,0 +1,8 @@
+export { Landing } from './Landing'
+export { Pricing } from './Pricing'
+export { Auth } from './Auth'
+export { Dashboard } from './Dashboard'
+export { Settings } from './Settings'
+export { Payment } from './Payment'
+export { Admin } from './Admin'
+export { Legal } from './Legal'
