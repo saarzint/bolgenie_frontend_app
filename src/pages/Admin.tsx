@@ -1,7 +1,6 @@
 import { useState, useRef } from 'react'
 import { LayoutDashboard, Users, UploadCloud, Edit2, Trash2, Loader2 } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
-import { BolgenieLogo } from '../components/BolgenieLogo'
 import { EditShipmentModal } from '../components/modals/EditShipmentModal'
 import { useExtractOCR, useDownloadPDF } from '../hooks'
 import { useToast } from '../components/ui/Toast'
@@ -123,13 +122,12 @@ export function Admin() {
       {/* Sidebar */}
       <aside className="w-64 bg-slate-800 border-r border-slate-700 flex flex-col">
         <div className="h-16 flex items-center px-6 font-bold border-b border-slate-700">
-          <BolgenieLogo className="w-6 h-6 mr-2" />
           Admin
         </div>
-        <nav className="p-4 space-y-2 flex-1">
+        <div className="p-4 space-y-2">
           <button
             onClick={() => setAdminView('overview')}
-            className={`w-full flex items-center px-4 py-3 rounded-xl transition-colors ${
+            className={`w-full flex items-center px-4 py-3 rounded-xl ${
               adminView === 'overview' ? 'bg-blue-600' : 'hover:bg-slate-700'
             }`}
           >
@@ -138,22 +136,20 @@ export function Admin() {
           </button>
           <button
             onClick={() => setAdminView('users')}
-            className={`w-full flex items-center px-4 py-3 rounded-xl transition-colors ${
+            className={`w-full flex items-center px-4 py-3 rounded-xl ${
               adminView === 'users' ? 'bg-blue-600' : 'hover:bg-slate-700'
             }`}
           >
             <Users className="w-5 h-5 mr-3" />
             Users
           </button>
-        </nav>
-        <div className="p-4 border-t border-slate-700">
-          <button
-            onClick={logout}
-            className="text-left text-red-400 hover:text-red-300 transition-colors"
-          >
-            Log Out
-          </button>
         </div>
+        <button
+          onClick={logout}
+          className="m-4 text-left text-red-400 mt-auto"
+        >
+          Log Out
+        </button>
       </aside>
 
       {/* Main Content */}
@@ -206,7 +202,7 @@ export function Admin() {
                     >
                       <div>
                         <div className="font-bold">
-                          {s.shipTo_name || s.parties?.consignee?.name || 'Unknown'}
+                          {s.shipTo_name || 'Unknown'}
                         </div>
                         <div className="text-xs text-slate-400">
                           {s.id.slice(0, 8)} &bull; User:{' '}

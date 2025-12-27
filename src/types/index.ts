@@ -1,9 +1,9 @@
-import type { User } from 'firebase/auth'
-
 // User Profile
 export interface UserProfile {
+  uid?: string
   email: string
-  createdAt: Date | null
+  createdAt?: Date | string | null
+  updatedAt?: Date | string | null
   role: 'user' | 'admin'
   plan: 'starter' | 'pro' | 'enterprise'
   usage: number
@@ -76,9 +76,9 @@ export interface Shipment extends BillOfLadingData {
 
 // Auth Context
 export interface AuthContextType {
-  user: User | null
   userProfile: UserProfile | null
   loading: boolean
+  isAuthenticated: boolean
   login: (email: string, password: string) => Promise<AuthResult>
   signup: (email: string, password: string) => Promise<AuthResult>
   logout: () => Promise<void>

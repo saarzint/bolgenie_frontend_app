@@ -11,12 +11,12 @@ export function useProfile() {
 }
 
 export function useIsAdmin() {
-  const { user, userProfile } = useAuth()
+  const { userProfile } = useAuth()
 
   // Check both role and specific admin email
   const isAdmin =
     userProfile?.role === 'admin' ||
-    user?.email === 'hellolisa.ai1@gmail.com'
+    userProfile?.email === 'hellolisa.ai1@gmail.com'
 
   return isAdmin
 }

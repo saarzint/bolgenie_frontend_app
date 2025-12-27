@@ -17,7 +17,7 @@ import { useToast } from '../components/ui/Toast'
 import type { Shipment } from '../types'
 
 export function Dashboard() {
-  const { user, userProfile, logout, deleteAccount } = useAuth()
+  const { userProfile, logout, deleteAccount } = useAuth()
   const { showToast } = useToast()
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -101,7 +101,7 @@ export function Dashboard() {
     }
   }
 
-  if (!user) return null
+  if (!userProfile) return null
 
   return (
     <div className="flex h-screen bg-gray-100 font-sans overflow-hidden">
@@ -125,13 +125,14 @@ export function Dashboard() {
       )}
 
       {/* Account Modal */}
-      <AccountModal
-        user={user}
-        userProfile={userProfile}
-        isOpen={accountModalOpen}
-        onClose={() => setAccountModalOpen(false)}
-        onDeleteAccount={deleteAccount}
-      />
+      {accountModalOpen && (
+        <AccountModal
+          userProfile={userProfile}
+          isOpen={accountModalOpen}
+          onClose={() => setAccountModalOpen(false)}
+          onDeleteAccount={deleteAccount}
+        />
+      )}
 
       {/* Sidebar */}
       <Sidebar
@@ -170,43 +171,36 @@ export function Dashboard() {
             </div>
           ) : shipments.length === 0 ? (
             <div className="text-center py-20 text-gray-400">
-              No shipments yet. Upload a document to start.
+              No shipments yet. Upload a PDF to start.
             </div>
           ) : (
             <div className="space-y-4">
               {shipments.map((shipment) => (
                 <div
                   key={shipment.id}
-                  className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center hover:shadow-md transition-shadow"
+                  className="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center"
                 >
                   <div>
                     <div className="font-bold">
-                      {shipment.shipTo_name ||
-                        shipment.parties?.consignee?.name ||
-                        'Unknown'}
+                      {shipment.shipTo_name || 'Unknown'}
                     </div>
                     <div className="text-xs text-gray-400">
-                      {shipment.id.slice(0, 8)} &bull;{' '}
+                      {shipment.id.slice(0, 8)} •{' '}
                       {shipment.createdAt
                         ? new Date(shipment.createdAt).toLocaleDateString()
                         : 'N/A'}
                     </div>
-                    {shipment.container_no && (
-                      <div className="text-xs text-blue-600 mt-1">
-                        Container: {shipment.container_no}
-                      </div>
-                    )}
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setEditingShipment(shipment)}
-                      className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                      className="p-2 bg-gray-100 rounded-lg hover:bg-gray-200"
                     >
                       <Edit2 className="w-4 h-4 text-gray-600" />
                     </button>
                     <button
                       onClick={() => handleDeleteShipment(shipment.id)}
-                      className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                      className="p-2 text-gray-400 hover:text-red-500"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

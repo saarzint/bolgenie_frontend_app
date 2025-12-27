@@ -26,14 +26,14 @@ function LoadingScreen() {
 
 // Protected route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { isAuthenticated, loading } = useAuth()
   const location = useLocation()
 
   if (loading) {
     return <LoadingScreen />
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location.pathname }} replace />
   }
 
@@ -42,13 +42,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 // Route that redirects authenticated users
 function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth()
+  const { isAuthenticated, loading } = useAuth()
 
   if (loading) {
     return <LoadingScreen />
   }
 
-  if (user) {
+  if (isAuthenticated) {
     return <Navigate to="/dashboard" replace />
   }
 
@@ -57,7 +57,7 @@ function PublicOnlyRoute({ children }: { children: React.ReactNode }) {
 
 // Main dashboard router - handles admin, setup, and payment checks
 function DashboardRouter() {
-  const { user, loading, userProfile } = useAuth()
+  const { isAuthenticated, loading } = useAuth()
   const isAdmin = useIsAdmin()
   const isPaid = useIsPaid()
   const hasCompletedSetup = useHasCompletedSetup()
@@ -66,7 +66,7 @@ function DashboardRouter() {
     return <LoadingScreen />
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 
@@ -90,7 +90,7 @@ function DashboardRouter() {
 
 // Settings route - only for users who haven't completed setup
 function SettingsRouter() {
-  const { user, loading } = useAuth()
+  const { isAuthenticated, loading } = useAuth()
   const hasCompletedSetup = useHasCompletedSetup()
   const isPaid = useIsPaid()
 
@@ -98,7 +98,7 @@ function SettingsRouter() {
     return <LoadingScreen />
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 
@@ -112,7 +112,7 @@ function SettingsRouter() {
 
 // Payment route - only for users who have completed setup but not paid
 function PaymentRouter() {
-  const { user, loading } = useAuth()
+  const { isAuthenticated, loading } = useAuth()
   const hasCompletedSetup = useHasCompletedSetup()
   const isPaid = useIsPaid()
 
@@ -120,7 +120,7 @@ function PaymentRouter() {
     return <LoadingScreen />
   }
 
-  if (!user) {
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />
   }
 

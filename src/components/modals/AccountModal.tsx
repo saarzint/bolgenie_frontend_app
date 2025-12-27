@@ -1,21 +1,18 @@
 import { Modal } from '../ui/Modal'
 import { Button } from '../ui/Button'
 import { CreditCard, ArrowRight } from 'lucide-react'
-import type { User } from 'firebase/auth'
 import type { UserProfile } from '../../types'
 
 const STRIPE_PORTAL_LINK = import.meta.env.VITE_STRIPE_PORTAL_LINK || '#'
 
 interface AccountModalProps {
-  user: User
   userProfile: UserProfile | null
   isOpen: boolean
   onClose: () => void
-  onDeleteAccount: () => Promise<void>
+  onDeleteAccount: () => Promise<void | { success: boolean; error?: string }>
 }
 
 export function AccountModal({
-  user,
   userProfile,
   isOpen,
   onClose,
@@ -34,10 +31,10 @@ export function AccountModal({
         {/* User Info */}
         <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl">
           <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-primary-600 font-bold text-xl">
-            {user.email?.[0].toUpperCase()}
+            {userProfile?.email?.[0]?.toUpperCase() || '?'}
           </div>
           <div>
-            <div className="font-bold">{user.email}</div>
+            <div className="font-bold">{userProfile?.email || 'Unknown'}</div>
             <div className="text-sm text-gray-500 capitalize">
               {userProfile?.plan || 'Starter'} Plan
             </div>

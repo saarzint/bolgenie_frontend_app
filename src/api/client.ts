@@ -1,8 +1,21 @@
 import axios, { type AxiosError, type AxiosRequestConfig } from 'axios'
-import { auth } from '../lib/firebase'
 import { APIError, ErrorCodes, parseAPIError } from '../lib/errors'
+import { tokenManager, authApi } from './auth'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1'
+
+// Flag to prevent multiple refresh attempts
+let isRefreshing = false
+let refreshSubscribers: ((token: string) => void)[] = []
+
+const subscribeTokenRefresh = (cb: (token: string) => void) => {
+  refreshSubscribers.push(cb)
+}
+
+const onRefreshed = (token: string) => {
+  refreshSubscribers.forEach((cb) => cb(token))
+  refreshSubscribers = []
+}
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -15,19 +28,9 @@ export const api = axios.create({
 // Add auth token to requests
 api.interceptors.request.use(
   async (config) => {
-    const user = auth.currentUser
-    if (user) {
-      try {
-        const token = await user.getIdToken()
-        config.headers.Authorization = `Bearer ${token}`
-      } catch (error) {
-        console.error('Failed to get auth token:', error)
-        throw new APIError(
-          'Failed to authenticate request',
-          ErrorCodes.AUTH_REQUIRED,
-          401
-        )
-      }
+    const token = tokenManager.getToken()
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
     }
     return config
   },
@@ -36,22 +39,55 @@ api.interceptors.request.use(
   }
 )
 
-// Handle response errors with structured error parsing
+// Handle response errors with structured error parsing and token refresh
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const apiError = parseAPIError(error)
+    const originalRequest = error.config
 
-    // Handle authentication errors
+    // Handle authentication errors with token refresh
     if (
-      apiError.code === ErrorCodes.AUTH_REQUIRED ||
-      apiError.code === ErrorCodes.INVALID_TOKEN
+      (apiError.code === ErrorCodes.AUTH_REQUIRED ||
+        apiError.code === ErrorCodes.INVALID_TOKEN) &&
+      originalRequest &&
+      !(originalRequest as { _retry?: boolean })._retry
     ) {
-      // Sign out user on auth errors
-      try {
-        await auth.signOut()
-      } catch (signOutError) {
-        console.error('Failed to sign out after auth error:', signOutError)
+      const refreshToken = tokenManager.getRefreshToken()
+
+      if (refreshToken) {
+        if (isRefreshing) {
+          // Wait for the ongoing refresh to complete
+          return new Promise((resolve) => {
+            subscribeTokenRefresh((token: string) => {
+              originalRequest.headers.Authorization = `Bearer ${token}`
+              resolve(api(originalRequest))
+            })
+          })
+        }
+
+        ;(originalRequest as { _retry?: boolean })._retry = true
+        isRefreshing = true
+
+        try {
+          const tokens = await authApi.refreshToken(refreshToken)
+          tokenManager.setTokens(tokens)
+          isRefreshing = false
+          onRefreshed(tokens.idToken)
+
+          originalRequest.headers.Authorization = `Bearer ${tokens.idToken}`
+          return api(originalRequest)
+        } catch (refreshError) {
+          isRefreshing = false
+          // Refresh failed, clear tokens and dispatch logout event
+          tokenManager.clearTokens()
+          window.dispatchEvent(new CustomEvent('auth:logout'))
+          return Promise.reject(apiError)
+        }
+      } else {
+        // No refresh token, clear tokens
+        tokenManager.clearTokens()
+        window.dispatchEvent(new CustomEvent('auth:logout'))
       }
     }
 

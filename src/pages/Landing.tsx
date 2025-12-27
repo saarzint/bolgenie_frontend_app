@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 
 export function Landing() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { isAuthenticated } = useAuth()
 
   return (
     <div className="bg-white min-h-screen flex flex-col animate-fade-in">
@@ -26,10 +26,10 @@ export function Landing() {
             Pricing
           </button>
           <button
-            onClick={() => navigate(user ? '/dashboard' : '/login')}
+            onClick={() => navigate(isAuthenticated ? '/dashboard' : '/login')}
             className="font-bold bg-blue-50 text-blue-600 px-4 py-2 rounded-full hover:bg-blue-100 transition"
           >
-            {user ? 'Dashboard' : 'Log In'}
+            {isAuthenticated ? 'Dashboard' : 'Log In'}
           </button>
         </div>
       </nav>

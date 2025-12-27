@@ -1,4 +1,4 @@
-import { LayoutDashboard, Settings, LogOut } from 'lucide-react'
+import { LayoutDashboard, Settings } from 'lucide-react'
 import { BolgenieLogo } from '../BolgenieLogo'
 
 interface SidebarProps {
@@ -18,10 +18,6 @@ export function Sidebar({
   isOpen,
   onClose,
 }: SidebarProps) {
-  const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  ]
-
   return (
     <>
       {/* Mobile Overlay */}
@@ -49,23 +45,20 @@ export function Sidebar({
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-2 flex-1">
-          {navItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                onNavigate(item.id)
-                onClose()
-              }}
-              className={`
-                w-full flex items-center px-4 py-3 rounded-xl transition-colors
-                ${currentView === item.id ? 'bg-slate-800' : 'hover:bg-slate-800'}
-              `}
-            >
-              <item.icon className="w-5 h-5 mr-3" />
-              {item.label}
-            </button>
-          ))}
+        <div className="p-4 space-y-2">
+          <button
+            onClick={() => {
+              onNavigate('dashboard')
+              onClose()
+            }}
+            className={`
+              w-full flex items-center px-4 py-3 rounded-xl transition-colors
+              ${currentView === 'dashboard' ? 'bg-slate-800' : 'hover:bg-slate-800'}
+            `}
+          >
+            <LayoutDashboard className="w-5 h-5 mr-3" />
+            Dashboard
+          </button>
 
           <button
             onClick={() => {
@@ -77,18 +70,14 @@ export function Sidebar({
             <Settings className="w-5 h-5 mr-3" />
             Settings
           </button>
-        </nav>
-
-        {/* Logout */}
-        <div className="p-4 border-t border-slate-800">
-          <button
-            onClick={onLogout}
-            className="w-full flex items-center px-4 py-3 hover:bg-red-900/50 text-red-400 rounded-xl transition-colors"
-          >
-            <LogOut className="w-5 h-5 mr-3" />
-            Log Out
-          </button>
         </div>
+
+        <button
+          onClick={onLogout}
+          className="m-4 text-left text-red-400 mt-auto"
+        >
+          Log Out
+        </button>
       </aside>
     </>
   )
