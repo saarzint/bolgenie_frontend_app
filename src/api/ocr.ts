@@ -9,7 +9,6 @@ export interface OCRExtractResponse {
 
 export const ocrApi = {
   extract: async (file: File): Promise<OCRExtractResponse> => {
-    const response = await uploadFile('/ocr/extract', file)
-    return response.data
+    return await uploadFile<OCRExtractResponse>('/ocr/extract', file)
   },
 }

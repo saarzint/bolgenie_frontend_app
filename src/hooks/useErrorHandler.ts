@@ -26,7 +26,7 @@ export function useErrorHandler(options: UseErrorHandlerOptions = {}) {
 
       // Show toast notification
       if (showToast) {
-        toast.error(customMessage || apiError.getUserMessage())
+        toast.showToast(customMessage || apiError.getUserMessage(), 'error')
       }
 
       // Log error in development
@@ -73,7 +73,7 @@ export function useQueryErrorHandler() {
         apiError.code !== ErrorCodes.AUTH_REQUIRED &&
         apiError.code !== ErrorCodes.INVALID_TOKEN
       ) {
-        toast.error(apiError.getUserMessage())
+        toast.showToast(apiError.getUserMessage(), 'error')
       }
     },
     [toast]
