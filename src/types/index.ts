@@ -8,6 +8,7 @@ export interface UserProfile {
   plan: 'starter' | 'pro' | 'enterprise'
   usage: number
   isPaid: boolean
+  isEmailVerified: boolean
   status: 'active' | 'inactive' | 'canceled'
   companyName?: string
   companyAddress?: string
@@ -59,7 +60,7 @@ export interface BillOfLadingData {
   status?: 'Draft' | 'Manual' | 'Complete'
 }
 
-// Shipment (Firestore document)
+// Shipment (Document from backend)
 export interface Shipment extends BillOfLadingData {
   id: string
   userId: string
@@ -72,6 +73,16 @@ export interface Shipment extends BillOfLadingData {
   container_no?: string
   seal_no?: string
   items?: string
+  // File information
+  fileUrl?: string
+  fileName?: string
+  fileSize?: number
+  fileType?: string
+  // AI extraction metadata
+  aiConfidence?: number
+  aiProcessingTime?: number
+  aiModelUsed?: string
+  source?: 'manual' | 'ocr' | 'api' | 'legacy'
 }
 
 // Auth Context
@@ -106,6 +117,13 @@ export interface OCRExtractResponse {
   data: BillOfLadingData
   confidence: number
   processingTime: number
+  modelUsed?: string
+  documentId?: string
+}
+
+export interface DocumentPreviewResponse {
+  url: string
+  expiresIn: number
 }
 
 export interface PaginatedResponse<T> {

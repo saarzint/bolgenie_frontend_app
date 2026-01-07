@@ -1,5 +1,5 @@
 import { api } from './client'
-import type { Shipment, BillOfLadingData, PaginatedResponse } from '../types'
+import type { Shipment, BillOfLadingData, PaginatedResponse, DocumentPreviewResponse } from '../types'
 
 export const shipmentsApi = {
   list: async (page = 1, pageSize = 20): Promise<PaginatedResponse<Shipment>> => {
@@ -26,5 +26,17 @@ export const shipmentsApi = {
 
   delete: async (id: string): Promise<void> => {
     await api.delete(`/shipments/${id}`)
+  },
+
+  /**
+   * Get a signed URL to preview/download the original document
+   * @param id - Shipment ID
+   * @param expirationMinutes - How long the URL should be valid (default: 60)
+   */
+  getPreviewUrl: async (id: string, expirationMinutes = 60): Promise<DocumentPreviewResponse> => {
+    const response = await api.get(`/shipments/${id}/preview`, {
+      params: { expiration_minutes: expirationMinutes },
+    })
+    return response.data
   },
 }

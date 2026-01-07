@@ -3,7 +3,7 @@ import { Button } from '../ui/Button'
 import { CreditCard, ArrowRight } from 'lucide-react'
 import type { UserProfile } from '../../types'
 
-const STRIPE_PORTAL_LINK = import.meta.env.VITE_STRIPE_PORTAL_LINK || '#'
+const STRIPE_PORTAL_LINK = import.meta.env.VITE_STRIPE_PORTAL_LINK
 
 interface AccountModalProps {
   userProfile: UserProfile | null
@@ -23,6 +23,10 @@ export function AccountModal({
       await onDeleteAccount()
       window.location.reload()
     }
+  }
+
+  const handleManageSubscription = () => {
+    window.location.href = STRIPE_PORTAL_LINK
   }
 
   return (
@@ -57,18 +61,18 @@ export function AccountModal({
         )}
 
         {/* Manage Subscription */}
-        <a
-          href={STRIPE_PORTAL_LINK}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="w-full flex items-center justify-between p-4 border rounded-xl hover:bg-gray-50 transition-colors"
-        >
-          <div className="flex items-center">
-            <CreditCard className="w-5 h-5 mr-3 text-gray-600" />
-            Manage Subscription
-          </div>
-          <ArrowRight className="w-4 h-4 text-gray-400" />
-        </a>
+        {userProfile?.isPaid && (
+          <button
+            onClick={handleManageSubscription}
+            className="w-full flex items-center justify-between p-4 border rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            <div className="flex items-center">
+              <CreditCard className="w-5 h-5 mr-3 text-gray-600" />
+              Manage Subscription
+            </div>
+            <ArrowRight className="w-4 h-4 text-gray-400" />
+          </button>
+        )}
 
         {/* Delete Account */}
         <Button

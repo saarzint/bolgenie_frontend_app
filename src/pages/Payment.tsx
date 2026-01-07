@@ -5,10 +5,10 @@ import { useAuth } from '../context/AuthContext'
 import { Button } from '../components/ui/Button'
 import { BolgenieLogo } from '../components/BolgenieLogo'
 
-// Stripe checkout links - replace with your actual links
+// Stripe checkout links from environment
 const STRIPE_CHECKOUT_LINKS = {
-  starter: 'https://buy.stripe.com/your_starter_link',
-  pro: 'https://buy.stripe.com/your_pro_link',
+  starter: import.meta.env.VITE_STRIPE_CHECKOUT_STARTER,
+  pro: import.meta.env.VITE_STRIPE_CHECKOUT_PRO,
 }
 
 export function Payment() {
@@ -28,16 +28,7 @@ export function Payment() {
     setLoading(true)
     // Redirect to Stripe Checkout
     const checkoutUrl = STRIPE_CHECKOUT_LINKS[plan as keyof typeof STRIPE_CHECKOUT_LINKS]
-    if (checkoutUrl && checkoutUrl !== 'https://buy.stripe.com/your_starter_link') {
-      window.location.href = checkoutUrl
-    } else {
-      // Demo mode - simulate payment completion
-      setTimeout(async () => {
-        await completePayment()
-        setLoading(false)
-        navigate('/dashboard')
-      }, 1000)
-    }
+    window.location.href = checkoutUrl
   }
 
   const handleSkip = async () => {

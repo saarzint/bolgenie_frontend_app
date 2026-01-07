@@ -58,6 +58,7 @@ const authAxios = axios.create({
 export const authApi = {
   /**
    * Sign up a new user
+   * POST /api/auth/signup
    */
   signup: async (email: string, password: string): Promise<AuthResponse> => {
     const response = await authAxios.post<AuthResponse>('/auth/signup', {
@@ -69,6 +70,7 @@ export const authApi = {
 
   /**
    * Login with email and password
+   * POST /api/auth/login
    */
   login: async (email: string, password: string): Promise<AuthResponse> => {
     const response = await authAxios.post<AuthResponse>('/auth/login', {
@@ -80,6 +82,7 @@ export const authApi = {
 
   /**
    * Refresh authentication tokens
+   * POST /api/auth/refresh
    */
   refreshToken: async (refreshToken: string): Promise<AuthTokens> => {
     const response = await authAxios.post<AuthTokens>('/auth/refresh', {
@@ -89,22 +92,59 @@ export const authApi = {
   },
 
   /**
-   * Logout (requires token)
+   * Verify email with token
+   * POST /api/auth/verify-email
    */
-  logout: async (token: string): Promise<void> => {
-    await authAxios.post(
-      '/auth/logout',
-      {},
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
+  verifyEmail: async (token: string): Promise<{ message: string }> => {
+    const response = await authAxios.post<{ message: string }>(
+      '/auth/verify-email',
+      { token }
     )
+    return response.data
+  },
+
+  /**
+   * Resend verification email
+   * POST /api/auth/resend-verification
+   */
+  resendVerification: async (email: string): Promise<{ message: string }> => {
+    const response = await authAxios.post<{ message: string }>(
+      '/auth/resend-verification',
+      { email }
+    )
+    return response.data
+  },
+
+  /**
+   * Request password reset email
+   * POST /api/auth/password-reset
+   */
+  resetPassword: async (email: string): Promise<{ message: string }> => {
+    const response = await authAxios.post<{ message: string }>(
+      '/auth/password-reset',
+      { email }
+    )
+    return response.data
+  },
+
+  /**
+   * Reset password with token
+   * POST /api/auth/password-reset/confirm
+   */
+  confirmPasswordReset: async (
+    token: string,
+    newPassword: string
+  ): Promise<{ message: string }> => {
+    const response = await authAxios.post<{ message: string }>(
+      '/auth/password-reset/confirm',
+      { token, new_password: newPassword }
+    )
+    return response.data
   },
 
   /**
    * Get current user profile (requires token)
+   * GET /api/v1/auth/me
    */
   getProfile: async (token: string): Promise<UserProfile> => {
     const response = await authAxios.get<UserProfile>('/auth/me', {
@@ -117,6 +157,7 @@ export const authApi = {
 
   /**
    * Update user profile (requires token)
+   * PUT /api/v1/auth/me
    */
   updateProfile: async (
     token: string,
@@ -131,12 +172,22 @@ export const authApi = {
   },
 
   /**
-   * Request password reset email
+   * Change password (requires token)
+   * POST /api/auth/change-password
    */
-  resetPassword: async (email: string): Promise<{ message: string }> => {
+  changePassword: async (
+    token: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<{ message: string }> => {
     const response = await authAxios.post<{ message: string }>(
-      '/auth/password-reset',
-      { email }
+      '/auth/change-password',
+      { current_password: currentPassword, new_password: newPassword },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     )
     return response.data
   },
@@ -174,4 +225,5 @@ export const authApi = {
     )
     return response.data
   },
+
 }

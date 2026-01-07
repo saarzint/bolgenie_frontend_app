@@ -44,7 +44,7 @@ export function Landing() {
           </span>
         </h1>
         <p className="text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed">
-          The #1 <strong>AI Bill of Lading Generator</strong> for Freight Brokers &
+          <strong>AI Bill of Lading Generator</strong> for Freight Brokers &
           Drayage Dispatchers. Instantly convert PDF Rate Cons into error-free BOLs.
         </p>
         <div className="flex flex-col sm:flex-row gap-4">

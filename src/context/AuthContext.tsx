@@ -100,15 +100,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }, [])
 
   const logout = useCallback(async () => {
-    const token = tokenManager.getToken()
-    if (token) {
-      try {
-        await authApi.logout(token)
-      } catch (error) {
-        // Ignore logout errors, still clear local state
-        console.error('Logout error:', error)
-      }
-    }
+    // Clear local tokens and state (no server-side logout endpoint)
     tokenManager.clearTokens()
     setUserProfile(null)
     localStorage.removeItem('selectedPlan')

@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react'
-import { LayoutDashboard, Users, UploadCloud, Edit2, Trash2, Loader2 } from 'lucide-react'
+import { LayoutDashboard, Users, UploadCloud, Edit2, Trash2, Loader2, Shield, ShieldOff } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { EditShipmentModal } from '../components/modals/EditShipmentModal'
 import { useExtractOCR, useDownloadPDF } from '../hooks'
 import { useToast } from '../components/ui/Toast'
-import { api } from '../api/client'
+import { adminApi, type AdminUser } from '../api'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import type { Shipment, UserProfile } from '../types'
+import type { Shipment } from '../types'
 
 export function Admin() {
   const { logout } = useAuth()
@@ -25,8 +25,8 @@ export function Admin() {
   const { data: allShipments = [], isLoading: shipmentsLoading } = useQuery({
     queryKey: ['admin', 'shipments'],
     queryFn: async () => {
-      const response = await api.get('/admin/shipments')
-      return response.data.items as Shipment[]
+      const response = await adminApi.getShipments()
+      return response.items as Shipment[]
     },
     enabled: adminView === 'overview',
   })
@@ -35,8 +35,8 @@ export function Admin() {
   const { data: usersList = [], isLoading: usersLoading } = useQuery({
     queryKey: ['admin', 'users'],
     queryFn: async () => {
-      const response = await api.get('/admin/users')
-      return response.data.items as (UserProfile & { id: string })[]
+      const response = await adminApi.getUsers()
+      return response.items as AdminUser[]
     },
     enabled: adminView === 'users',
   })
@@ -44,13 +44,53 @@ export function Admin() {
   // Delete shipment mutation
   const deleteShipment = useMutation({
     mutationFn: async (id: string) => {
-      await api.delete(`/admin/shipments/${id}`)
+      await adminApi.deleteShipment(id)
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'shipments'] })
       showToast('Shipment deleted')
     },
   })
+
+  // Set admin mutation
+  const setAdminMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      await adminApi.setAdmin(userId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
+      showToast('User promoted to admin')
+    },
+    onError: () => {
+      showToast('Failed to set admin role', 'error')
+    },
+  })
+
+  // Remove admin mutation
+  const removeAdminMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      await adminApi.removeAdmin(userId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
+      showToast('Admin role removed')
+    },
+    onError: () => {
+      showToast('Failed to remove admin role', 'error')
+    },
+  })
+
+  const handleToggleAdmin = async (user: AdminUser) => {
+    if (user.role === 'admin') {
+      if (window.confirm(`Remove admin role from ${user.email}?`)) {
+        removeAdminMutation.mutate(user.id)
+      }
+    } else {
+      if (window.confirm(`Make ${user.email} an admin?`)) {
+        setAdminMutation.mutate(user.id)
+      }
+    }
+  }
 
   const handleTestUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -238,21 +278,23 @@ export function Admin() {
                 <thead className="text-slate-400 border-b border-slate-600">
                   <tr>
                     <th className="pb-2">Email</th>
+                    <th className="pb-2">Role</th>
                     <th className="pb-2">Plan</th>
                     <th className="pb-2">Status</th>
                     <th className="pb-2">Joined</th>
+                    <th className="pb-2">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {usersLoading ? (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-slate-500">
+                      <td colSpan={6} className="py-8 text-center text-slate-500">
                         Loading users...
                       </td>
                     </tr>
                   ) : usersList.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-slate-500">
+                      <td colSpan={6} className="py-8 text-center text-slate-500">
                         No users found.
                       </td>
                     </tr>
@@ -263,6 +305,17 @@ export function Admin() {
                         className="border-b border-slate-700/50 hover:bg-slate-700/50"
                       >
                         <td className="py-3">{u.email}</td>
+                        <td className="py-3">
+                          <span
+                            className={`px-2 py-1 rounded text-xs font-bold capitalize ${
+                              u.role === 'admin'
+                                ? 'bg-purple-900 text-purple-200'
+                                : 'bg-slate-600 text-slate-300'
+                            }`}
+                          >
+                            {u.role || 'user'}
+                          </span>
+                        </td>
                         <td className="py-3">
                           <span
                             className={`px-2 py-1 rounded text-xs font-bold capitalize ${
@@ -285,6 +338,24 @@ export function Admin() {
                           {u.createdAt
                             ? new Date(u.createdAt).toLocaleDateString()
                             : 'N/A'}
+                        </td>
+                        <td className="py-3">
+                          <button
+                            onClick={() => handleToggleAdmin(u)}
+                            disabled={setAdminMutation.isPending || removeAdminMutation.isPending}
+                            className={`p-1.5 rounded transition-colors ${
+                              u.role === 'admin'
+                                ? 'hover:bg-red-900/50 text-red-400 hover:text-red-300'
+                                : 'hover:bg-purple-900/50 text-slate-400 hover:text-purple-300'
+                            } disabled:opacity-50`}
+                            title={u.role === 'admin' ? 'Remove admin' : 'Make admin'}
+                          >
+                            {u.role === 'admin' ? (
+                              <ShieldOff className="w-4 h-4" />
+                            ) : (
+                              <Shield className="w-4 h-4" />
+                            )}
+                          </button>
                         </td>
                       </tr>
                     ))
